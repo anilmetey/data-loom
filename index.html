@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataLoom | Smart Insights</title>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body data-theme="light">    
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i data-lucide="layers" class="logo-icon"></i>
+                    <span class="logo-text animated-gradient-text">DataLoom</span>
+                </div>
+                <div class="version">v8.1</div>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="sidebar-section">
+                    <h3 class="section-title" data-i18n="nav_datasource">DATA SOURCE</h3>
+                    <div id="file-info" class="file-info hidden">
+                        <i data-lucide="file-spreadsheet" class="file-icon"></i>
+                        <div class="file-details">
+                            <span id="sidebar-filename" class="filename">dataset.csv</span>
+                            <span id="sidebar-filesize" class="filesize" data-i18n="nav_loaded">Loaded</span>
+                        </div>
+                        <button id="remove-file-btn" class="icon-btn" title="Remove Dataset">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <div id="no-file-info" class="no-file-info">
+                        <span class="text-muted" data-i18n="nav_nofile">No dataset loaded</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="section-title" data-i18n="nav_explore">EXPLORE & PREP</h3>
+                    <nav class="nav-menu">
+                        <button class="nav-item active" data-target="upload-view" id="nav-workspace">
+                            <i data-lucide="upload-cloud"></i>
+                            <span data-i18n="nav_workspace">Workspace</span>
+                        </button>
+                        <button class="nav-item disabled" data-target="overview-view" id="nav-overview">
+                            <i data-lucide="layout-dashboard"></i>
+                            <span data-i18n="nav_overview">Overview & Insights</span>
+                        </button>
+                        <button class="nav-item disabled" data-target="data-view" id="nav-data">
+                            <i data-lucide="database"></i>
+                            <span data-i18n="nav_dataeditor">Data Editor & Prep</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="section-title" data-i18n="nav_analytics">ANALYTICS & ML</h3>
+                    <nav class="nav-menu">
+                        <button class="nav-item disabled" data-target="distribution-view" id="nav-distribution">
+                            <i data-lucide="bar-chart-2"></i>
+                            <span data-i18n="nav_distributions">Distributions</span>
+                        </button>
+                        <button class="nav-item disabled" data-target="groupby-view" id="nav-groupby">
+                            <i data-lucide="pie-chart"></i>
+                            <span data-i18n="nav_groupby">Group By Analysis</span>
+                        </button>
+                        <button class="nav-item disabled" data-target="correlation-view" id="nav-correlation">
+                            <i data-lucide="git-branch"></i>
+                            <span data-i18n="nav_regression">Linear Regression</span>
+                        </button>
+                        <button class="nav-item disabled" data-target="outlier-view" id="nav-outlier">
+                            <i data-lucide="alert-circle"></i>
+                            <span data-i18n="nav_anomaly">Anomaly Detection</span>
+                        </button>
+                        <button class="nav-item disabled" data-target="kmeans-view" id="nav-kmeans">
+                            <i data-lucide="target"></i>
+                            <span data-i18n="nav_kmeans">K-Means Clustering</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator status-pulse" style="margin-bottom: 1rem;">
+                    <div class="status-dot"></div>
+                    <span id="app-status" data-i18n="status_ready">Ready</span>
+                </div>
+                <div class="creator-badge">
+                    <i data-lucide="zap" class="badge-icon"></i>
+                    <span class="animated-gradient-text font-semibold">Created by Anıl Mete</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="flex-row items-center gap-4">
+                    <h1 id="page-title" class="animated-gradient-text" data-i18n="nav_workspace">Workspace</h1>
+                </div>
+                <div class="header-actions flex-row gap-4 items-center">
+                    <button class="theme-toggle-btn" id="theme-toggle" title="Karanlık/Aydınlık Mod" onclick="toggleTheme()">
+                        <i data-lucide="moon"></i>
+                    </button>
+                    <button id="btn-export-pdf" style="border: 1px solid var(--accent); color: var(--accent); background: rgba(94, 129, 172, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i data-lucide="file-text" style="width:14px; height:14px;"></i> <span data-i18n="btn_export">Export PDF</span>
+                    </button>
+                    <div class="lang-toggle-wrapper">
+                        <button id="btn-lang-en" class="lang-btn active">EN</button>
+                        <button id="btn-lang-tr" class="lang-btn">TR</button>
+                    </div>
+                </div>
+            </header>
+
+            <div id="loading-overlay" class="loading-overlay hidden">
+                <div class="spinner"></div>
+                <p data-i18n="processing">Processing Data...</p>
+            </div>
+
+            <div class="view-container" id="view-container">
+                
+                <!-- View: Upload -->
+                <div id="upload-view" class="view active">
+                    <div class="upload-container">
+                        <div id="drop-zone" class="drop-zone animated-zone">
+                            <div class="glow-bg"></div>
+                            <div class="upload-icon-wrapper bounce-anim">
+                                <i data-lucide="cloud-upload" class="upload-icon-large"></i>
+                            </div>
+                            <h2 data-i18n="upload_title" class="upload-title">Import Your Dataset</h2>
+                            <p class="text-muted upload-desc" data-i18n="upload_desc">Drag and drop your CSV file here, or click to browse files from your computer.</p>
+                            <input type="file" id="file-input" accept=".csv" hidden>
+                            <button class="btn btn-primary mt-6 btn-lg" onclick="document.getElementById('file-input').click()">
+                                <i data-lucide="folder-open" style="width:16px; height:16px;"></i> <span data-i18n="upload_btn">Browse Files</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: Overview -->
+                <div id="overview-view" class="view hidden">
+                    <div class="card mb-6 highlight-card">
+                        <div class="card-header flex-row items-center gap-2">
+                            <i data-lucide="lightbulb" class="text-warning"></i>
+                            <h2 class="card-title" data-i18n="key_discoveries">Key Discoveries (Auto-Insights)</h2>
+                        </div>
+                        <div class="card-body">
+                            <ul class="discovery-list" id="discovery-list">
+                                <li class="text-muted italic" data-i18n="processing_insights">Processing insights...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="card stat-card">
+                            <div class="stat-title" data-i18n="stat_rows">Total Rows</div>
+                            <div class="stat-value" id="stat-rows">0</div>
+                        </div>
+                        <div class="card stat-card">
+                            <div class="stat-title" data-i18n="stat_cols">Total Columns</div>
+                            <div class="stat-value" id="stat-cols">0</div>
+                        </div>
+                        <div class="card stat-card">
+                            <div class="stat-title" data-i18n="stat_missing">Missing Values</div>
+                            <div class="stat-value text-danger" id="stat-missing">0</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title" data-i18n="schema_title">Dataset Schema</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="data-table schema-table">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="th_colname">Column Name</th>
+                                        <th data-i18n="th_datatype">Data Type</th>
+                                        <th data-i18n="th_missing">Missing Values</th>
+                                        <th data-i18n="th_unique">Unique Values</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schema-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: Raw Data -->
+                <div id="data-view" class="view hidden">
+                    <div class="card mb-6">
+                        <div class="card-header"><h2 class="card-title" data-i18n="fe_title">Feature Engineering</h2></div>
+                        <div class="card-body flex-row justify-between items-center">
+                            <div class="flex-row items-center gap-4">
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="fe_col1">Col 1</label>
+                                    <select id="fe-col1" class="form-select w-48"></select>
+                                </div>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="fe_op">Op</label>
+                                    <select id="fe-op" class="form-select w-24">
+                                        <option value="add">+</option><option value="sub">-</option><option value="mul">*</option><option value="div">/</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="fe_col2">Col 2</label>
+                                    <select id="fe-col2" class="form-select w-48"></select>
+                                </div>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="fe_newname">New Col Name</label>
+                                    <input type="text" id="fe-newname" class="form-input w-48" placeholder="e.g. ROI">
+                                </div>
+                                <div class="mt-5">
+                                    <button id="btn-create-feature" class="btn btn-primary"><span data-i18n="btn_create">Create</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="card">
+                        <div class="flex-row justify-between items-center mb-4">
+                            <div class="flex-row items-center gap-4">
+                                <h3><span data-i18n="grid_title">Data Grid</span> <span class="text-xs text-muted font-normal" data-i18n="grid_hint">(Click headers to sort)</span></h3>
+                                <button id="btn-fill-mean" class="btn btn-outline btn-sm">
+                                    <i data-lucide="droplet" style="width:14px; height:14px;"></i> <span data-i18n="btn_fillna">Fill NAs (Mean)</span>
+                                </button>
+                                <button id="btn-drop-na" class="btn btn-outline btn-sm text-danger border-danger">
+                                    <i data-lucide="trash-2" style="width:14px; height:14px;"></i> <span data-i18n="btn_dropna">Drop NAs</span>
+                                </button>
+                            </div>
+                            <div class="flex-row items-center gap-2" style="background: var(--bg-app); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-light);">
+                                <i data-lucide="search" class="text-muted" style="width: 16px; height: 16px;"></i>
+                                <input type="text" id="data-search" class="form-control" style="border:none; box-shadow:none; padding:0; background:transparent; font-size:13px; width: 220px;" data-i18n-placeholder="search_placeholder" placeholder="Search data...">
+                            </div>
+                        </div>
+                        <div class="table-container" style="max-height: 600px;">
+                            <table class="data-table preview-table" id="raw-data-table">
+                                <thead id="raw-data-thead" class="sortable-head"></thead>
+                                <tbody id="raw-data-tbody"></tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer p-2 border-t text-right text-xs text-muted" data-i18n="grid_footer">Showing top 100 rows</div>
+                    </div>
+                </div>
+
+                <!-- View: Distributions -->
+                <div id="distribution-view" class="view hidden">
+                    <div class="grid grid-cols-[300px_1fr] gap-6">
+                        <div class="card mb-6">
+                            <h3 data-i18n="dist_sel_title">Variable Selection</h3>
+                            <div class="form-group" style="margin-top: 1rem;">
+                                <label data-i18n="dist_sel_label">Select Column to Analyze</label>
+                                <select id="column-select" class="form-control"></select>
+                            </div>
+                            <div id="var-details" class="hidden" style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                                <div style="background: var(--bg-app); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light); flex: 1;">
+                                    <div class="text-xs text-muted mb-1" data-i18n="dist_min">Min</div>
+                                    <div id="var-min" class="font-semibold text-accent" style="font-size: 16px;"></div>
+                                </div>
+                                <div style="background: var(--bg-app); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light); flex: 1;">
+                                    <div class="text-xs text-muted mb-1" data-i18n="dist_max">Max</div>
+                                    <div id="var-max" class="font-semibold text-accent" style="font-size: 16px;"></div>
+                                </div>
+                                <div style="background: var(--bg-app); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light); flex: 1;">
+                                    <div class="text-xs text-muted mb-1" data-i18n="dist_mean">Mean</div>
+                                    <div id="var-mean" class="font-semibold text-accent" style="font-size: 16px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-col gap-6">
+                            <div class="insight-box hidden" id="dist-insight">
+                                <i data-lucide="sparkles" class="insight-icon"></i>
+                                <div class="insight-text" id="dist-insight-text"></div>
+                            </div>
+                            <div class="card mt-4">
+                                <div class="card-header flex-row justify-between items-center">
+                                    <h2 class="card-title" data-i18n="dist_chart_title">Distribution Analysis</h2>
+                                    <button class="btn btn-outline btn-sm" onclick="downloadChart('distributionChart', 'Distribution')">
+                                        <i data-lucide="download" style="width:14px; height:14px;"></i> <span data-i18n="btn_export">Export</span>
+                                    </button>
+                                </div>
+                                <div class="card-body chart-wrapper bg-chart rounded-b-lg">
+                                    <canvas id="distributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: Group By -->
+                <div id="groupby-view" class="view hidden">
+                    <div class="card mb-6">
+                        <div class="card-body flex-row justify-between items-center">
+                            <div class="flex-row items-center gap-4">
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="gb_cat">Group By (Categorical)</label>
+                                    <select id="group-cat-select" class="form-select w-64"></select>
+                                </div>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="gb_agg">Aggregation</label>
+                                    <select id="group-agg-select" class="form-select w-32">
+                                        <option value="avg" data-i18n="agg_avg">Average</option>
+                                        <option value="sum" data-i18n="agg_sum">Sum</option>
+                                        <option value="min" data-i18n="agg_min">Min</option>
+                                        <option value="max" data-i18n="agg_max">Max</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="gb_num">Target (Numeric)</label>
+                                    <select id="group-num-select" class="form-select w-64"></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="insight-box hidden mb-6" id="gb-insight">
+                        <i data-lucide="sparkles" class="insight-icon"></i>
+                        <div class="insight-text" id="gb-insight-text"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header flex-row justify-between items-center">
+                            <h2 class="card-title" data-i18n="gb_chart_title">Group Analysis Result</h2>
+                            <button class="btn btn-outline btn-sm" onclick="downloadChart('groupByChart', 'GroupAnalysis')">
+                                <i data-lucide="download" style="width:14px; height:14px;"></i> <span data-i18n="btn_export">Export</span>
+                            </button>
+                        </div>
+                        <div class="card-body chart-wrapper large bg-chart rounded-b-lg">
+                            <canvas id="groupByChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: Correlation -->
+                <div id="correlation-view" class="view hidden">
+                    <div class="card mb-6">
+                        <div class="card-body flex-row justify-between items-center">
+                            <div class="flex-row items-center gap-4">
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="corr_x">X Axis (Independent)</label>
+                                    <select id="corr-x-select" class="form-select w-64"></select>
+                                </div>
+                                <i data-lucide="arrow-right-left" class="text-muted mt-5"></i>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="corr_y">Y Axis (Dependent)</label>
+                                    <select id="corr-y-select" class="form-select w-64"></select>
+                                </div>
+                            </div>
+                            <div class="correlation-score text-right">
+                                <div class="text-muted text-sm uppercase" data-i18n="corr_pearson">Pearson (r)</div>
+                                <div id="corr-value" class="text-2xl font-semibold">0.000</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insight-box hidden mb-6" id="corr-insight">
+                        <i data-lucide="sparkles" class="insight-icon"></i>
+                        <div class="insight-text" id="corr-insight-text"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header flex-row justify-between items-center">
+                            <h2 class="card-title" data-i18n="corr_chart_title">Scatter Plot & Linear Regression Trendline</h2>
+                            <button class="btn btn-outline btn-sm" onclick="downloadChart('scatterChart', 'Correlation')">
+                                <i data-lucide="download" style="width:14px; height:14px;"></i> <span data-i18n="btn_export">Export</span>
+                            </button>
+                        </div>
+                        <div class="card-body chart-wrapper large bg-chart">
+                            <canvas id="scatterChart"></canvas>
+                        </div>
+                        <!-- Executive Summary Table for Correlation -->
+                        <div class="card-footer p-0 border-t hidden" id="corr-exec-summary">
+                            <div class="p-4 bg-hover text-sm" id="corr-exec-text"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: Outlier Detection -->
+                <div id="outlier-view" class="view hidden">
+                    <div class="card mb-6">
+                        <div class="card-body flex-row justify-between items-center">
+                            <div class="flex-row items-center gap-4">
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="out_col">Select Numeric Column</label>
+                                    <select id="outlier-select" class="form-select w-64"></select>
+                                </div>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="out_thresh">Z-Score Threshold</label>
+                                    <input type="number" id="outlier-threshold" class="form-input w-32" value="3" min="1" max="5" step="0.5">
+                                </div>
+                                <div class="mt-5">
+                                    <button id="btn-run-outlier" class="btn btn-primary"><span data-i18n="btn_find">Find Anomalies</span></button>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-muted text-sm uppercase" data-i18n="out_found">Anomalies Found</div>
+                                <div id="outlier-count" class="text-2xl font-semibold text-danger">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-box hidden mb-6" id="out-insight">
+                        <i data-lucide="sparkles" class="insight-icon text-danger"></i>
+                        <div class="insight-text" id="out-insight-text"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header flex-row justify-between items-center">
+                            <h2 class="card-title" data-i18n="out_chart_title">Anomaly Highlight Scatter (Index vs Value)</h2>
+                            <button class="btn btn-outline btn-sm" onclick="downloadChart('outlierChart', 'Outliers')">
+                                <i data-lucide="download" style="width:14px; height:14px;"></i> <span data-i18n="btn_export">Export</span>
+                            </button>
+                        </div>
+                        <div class="card-body chart-wrapper bg-chart" style="height: 250px;">
+                            <canvas id="outlierChart"></canvas>
+                        </div>
+                        <!-- Executive Summary Table for Outliers -->
+                        <div class="card-footer p-0 border-t hidden" id="out-exec-summary">
+                            <div class="p-4 bg-hover">
+                                <h3 class="text-sm font-semibold mb-3 text-danger" data-i18n="out_exec_title">Top Extreme Cases (Raw Data)</h3>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="out_th_row">Row Index</th>
+                                            <th data-i18n="out_th_val">Value</th>
+                                            <th data-i18n="out_th_z">Z-Score</th>
+                                            <th data-i18n="out_th_status">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="out-exec-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: K-Means Clustering -->
+                <div id="kmeans-view" class="view hidden">
+                    <div class="card mb-6">
+                        <div class="card-body flex-row justify-between items-center">
+                            <div class="flex-row items-center gap-4">
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="km_x">Feature 1 (X Axis)</label>
+                                    <select id="kmeans-x-select" class="form-select w-64"></select>
+                                </div>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="km_y">Feature 2 (Y Axis)</label>
+                                    <select id="kmeans-y-select" class="form-select w-64"></select>
+                                </div>
+                                <div>
+                                    <label class="form-label mb-1" data-i18n="km_k">Clusters (K)</label>
+                                    <input type="number" id="kmeans-k-input" class="form-input w-24" value="3" min="2" max="10">
+                                </div>
+                                <div class="mt-5">
+                                    <button id="btn-run-kmeans" class="btn btn-primary"><span data-i18n="btn_run_ml">Run ML</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insight-box hidden mb-6" id="km-insight">
+                        <i data-lucide="sparkles" class="insight-icon"></i>
+                        <div class="insight-text" id="km-insight-text"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header flex-row justify-between items-center">
+                            <h2 class="card-title" data-i18n="km_chart_title">Clustering Results</h2>
+                            <button class="btn btn-outline btn-sm" onclick="downloadChart('kmeansChart', 'KMeans')">
+                                <i data-lucide="download" style="width:14px; height:14px;"></i> <span data-i18n="btn_export">Export</span>
+                            </button>
+                        </div>
+                        <div class="card-body chart-wrapper bg-chart" style="height: 300px;">
+                            <canvas id="kmeansChart"></canvas>
+                        </div>
+                        <!-- Executive Summary Table for KMeans -->
+                        <div class="card-footer p-0 border-t hidden" id="km-exec-summary">
+                            <div class="p-4 bg-hover">
+                                <h3 class="text-sm font-semibold mb-3 text-accent" data-i18n="km_exec_title">Segment Profiles (Executive Summary)</h3>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="km_th_seg">Segment</th>
+                                            <th data-i18n="km_th_persona">Persona / Profile</th>
+                                            <th data-i18n="km_th_size">Size</th>
+                                            <th id="km-th-x">Avg X</th>
+                                            <th id="km-th-y">Avg Y</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="km-exec-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Inline theme script to prevent flashing
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = newTheme === 'light' ? 'moon' : 'sun';
+            document.getElementById('theme-toggle').innerHTML = `<i data-lucide="${icon}"></i>`;
+            lucide.createIcons();
+            
+            // Re-render charts for theme update if possible
+            if (typeof renderAllCharts === 'function') {
+                setTimeout(renderAllCharts, 400); // Wait for transition
+            }
+        }
+
+        // Initialize Theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+        document.addEventListener("DOMContentLoaded", () => {
+            const icon = savedTheme === 'light' ? 'moon' : 'sun';
+            document.getElementById('theme-toggle').innerHTML = `<i data-lucide="${icon}"></i>`;
+            lucide.createIcons();
+        });
+    </script>
+    <script src="main.js"></script>
+</body>
+</html>
