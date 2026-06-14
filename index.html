@@ -84,6 +84,14 @@
                             <i data-lucide="target"></i>
                             <span data-i18n="nav_kmeans">K-Means Clustering</span>
                         </button>
+                        <button class="nav-item disabled" data-target="classification-view" id="nav-classification">
+                            <i data-lucide="layers"></i>
+                            <span data-i18n="nav_classification">Classification (KNN)</span>
+                        </button>
+                        <button class="nav-item disabled" data-target="multi-reg-view" id="nav-multi-reg">
+                            <i data-lucide="trending-up"></i>
+                            <span data-i18n="nav_multi_reg">Multiple Regression</span>
+                        </button>
                     </nav>
                 </div>
             </div>
@@ -498,6 +506,118 @@
                                     <tbody id="km-exec-tbody"></tbody>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: Classification (KNN) -->
+                <div id="classification-view" class="view hidden">
+                    <div class="card mb-6">
+                        <div class="card-body">
+                            <div class="flex-row gap-6">
+                                <div style="flex: 1;">
+                                    <label class="form-label mb-2" data-i18n="class_y">Target Variable (Categorical)</label>
+                                    <select id="class-y-select" class="form-select w-full"></select>
+                                    <div class="mt-4">
+                                        <label class="form-label mb-2" data-i18n="class_k">Number of Neighbors (K)</label>
+                                        <input type="number" id="class-k-input" class="form-input w-24" value="5" min="1" max="50">
+                                    </div>
+                                    <div class="mt-6">
+                                        <button id="btn-run-class" class="btn btn-primary w-full"><span data-i18n="btn_train">Train & Predict</span></button>
+                                    </div>
+                                </div>
+                                <div style="flex: 2;">
+                                    <label class="form-label mb-2" data-i18n="class_x">Features (Numeric)</label>
+                                    <div class="card p-3" style="max-height: 200px; overflow-y: auto; background: var(--bg-app); border: 1px solid var(--border-light);" id="class-x-container">
+                                        <!-- Checkboxes will be injected here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insight-box hidden mb-6" id="class-insight">
+                        <i data-lucide="sparkles" class="insight-icon"></i>
+                        <div class="insight-text" id="class-insight-text"></div>
+                    </div>
+
+                    <div class="card hidden" id="class-results-card">
+                        <div class="card-header flex-row justify-between items-center">
+                            <h2 class="card-title" data-i18n="class_results_title">Model Results</h2>
+                            <div class="stat-value text-accent" id="class-accuracy" style="font-size: 20px;">0%</div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="text-sm font-semibold mb-3" data-i18n="class_conf_matrix">Evaluation Metrics</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="class_th_metric">Metric</th>
+                                        <th data-i18n="class_th_val">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="class-exec-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: Multiple Regression -->
+                <div id="multi-reg-view" class="view hidden">
+                    <div class="card mb-6">
+                        <div class="card-body">
+                            <div class="flex-row gap-6">
+                                <div style="flex: 1;">
+                                    <label class="form-label mb-2" data-i18n="mreg_y">Target Variable (Numeric)</label>
+                                    <select id="mreg-y-select" class="form-select w-full"></select>
+                                    <div class="mt-4 flex-row gap-4">
+                                        <div>
+                                            <label class="form-label mb-2" data-i18n="mreg_lr">Learning Rate</label>
+                                            <select id="mreg-lr-input" class="form-select w-24">
+                                                <option value="0.1">0.1</option>
+                                                <option value="0.01" selected>0.01</option>
+                                                <option value="0.001">0.001</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="form-label mb-2" data-i18n="mreg_ep">Epochs</label>
+                                            <input type="number" id="mreg-ep-input" class="form-input w-24" value="1000" min="100" max="5000" step="100">
+                                        </div>
+                                    </div>
+                                    <div class="mt-6">
+                                        <button id="btn-run-mreg" class="btn btn-primary w-full"><span data-i18n="btn_train">Train & Predict</span></button>
+                                    </div>
+                                </div>
+                                <div style="flex: 2;">
+                                    <label class="form-label mb-2" data-i18n="mreg_x">Features (Numeric)</label>
+                                    <div class="card p-3" style="max-height: 200px; overflow-y: auto; background: var(--bg-app); border: 1px solid var(--border-light);" id="mreg-x-container">
+                                        <!-- Checkboxes will be injected here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insight-box hidden mb-6" id="mreg-insight">
+                        <i data-lucide="sparkles" class="insight-icon"></i>
+                        <div class="insight-text" id="mreg-insight-text"></div>
+                    </div>
+
+                    <div class="card hidden" id="mreg-results-card">
+                        <div class="card-header flex-row justify-between items-center">
+                            <h2 class="card-title" data-i18n="mreg_results_title">Model Results</h2>
+                            <div class="stat-value text-accent" id="mreg-r2" style="font-size: 20px;">R² = 0.00</div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="text-sm font-semibold mb-3" data-i18n="mreg_weights_title">Feature Weights (Importance)</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="mreg_th_feat">Feature</th>
+                                        <th data-i18n="mreg_th_weight">Weight (Coefficient)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mreg-exec-tbody"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

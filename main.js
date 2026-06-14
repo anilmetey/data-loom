@@ -22,7 +22,12 @@ const translations = {
         out_exec_title: "Top Extreme Cases (Raw Data)", out_th_row: "Row Index", out_th_val: "Value", out_th_z: "Z-Score", out_th_status: "Status",
         km_x: "Feature 1 (X Axis)", km_y: "Feature 2 (Y Axis)", km_k: "Clusters (K)", btn_run_ml: "Run ML", km_chart_title: "Clustering Results",
         km_exec_title: "Segment Profiles (Executive Summary)", km_th_seg: "Segment", km_th_persona: "Persona / Profile", km_th_size: "Size",
-        cmd_placeholder: "Search actions, tabs, or features (Ctrl+K)"
+        cmd_placeholder: "Search actions, tabs, or features (Ctrl+K)",
+        nav_classification: "Classification (KNN)", nav_multi_reg: "Multiple Regression",
+        class_y: "Target Variable (Categorical)", class_k: "Number of Neighbors (K)", btn_train: "Train & Predict", class_x: "Features (Numeric)",
+        class_results_title: "Model Results", class_conf_matrix: "Evaluation Metrics", class_th_metric: "Metric", class_th_val: "Value",
+        mreg_y: "Target Variable (Numeric)", mreg_lr: "Learning Rate", mreg_ep: "Epochs", mreg_x: "Features (Numeric)",
+        mreg_results_title: "Model Results", mreg_weights_title: "Feature Weights (Importance)", mreg_th_feat: "Feature", mreg_th_weight: "Weight (Coefficient)"
     },
     tr: {
         nav_datasource: "VERİ KAYNAĞI", nav_loaded: "Yüklendi", nav_nofile: "Veri seti yüklenmedi",
@@ -44,7 +49,12 @@ const translations = {
         out_exec_title: "Tespit Edilen En Uç Hatalı Kayıtlar (Ham Veri)", out_th_row: "Satır No", out_th_val: "Gerçek Değer", out_th_z: "Z-Skoru", out_th_status: "Durum",
         km_x: "Özellik 1 (X Ekseni)", km_y: "Özellik 2 (Y Ekseni)", km_k: "Küme Sayısı (K)", btn_run_ml: "Yapay Zekayı Çalıştır", km_chart_title: "Kümeleme Sonuçları",
         km_exec_title: "Müşteri/Segment Profilleri (Yönetici Özeti)", km_th_seg: "Segment Adı", km_th_persona: "Kimlik / Profil (Persona)", km_th_size: "Kayıt Sayısı",
-        cmd_placeholder: "Aksiyon, sekme veya özellik ara (Ctrl+K)"
+        cmd_placeholder: "Aksiyon, sekme veya özellik ara (Ctrl+K)",
+        nav_classification: "Sınıflandırma (KNN)", nav_multi_reg: "Çoklu Regresyon",
+        class_y: "Hedef Değişken (Kategorik)", class_k: "Komşu Sayısı (K)", btn_train: "Eğit ve Tahmin Et", class_x: "Özellikler (Sayısal)",
+        class_results_title: "Model Sonuçları", class_conf_matrix: "Değerlendirme Metrikleri", class_th_metric: "Metrik", class_th_val: "Değer",
+        mreg_y: "Hedef Değişken (Sayısal)", mreg_lr: "Öğrenme Oranı (LR)", mreg_ep: "Döngü (Epochs)", mreg_x: "Özellikler (Sayısal)",
+        mreg_results_title: "Model Sonuçları", mreg_weights_title: "Özellik Ağırlıkları (Önem Derecesi)", mreg_th_feat: "Özellik", mreg_th_weight: "Ağırlık (Katsayı)"
     }
 };
 
@@ -126,6 +136,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const kmExecTbody = document.getElementById('km-exec-tbody');
     const kmThX = document.getElementById('km-th-x');
     const kmThY = document.getElementById('km-th-y');
+
+    const classYSelect = document.getElementById('class-y-select');
+    const classKInput = document.getElementById('class-k-input');
+    const classXContainer = document.getElementById('class-x-container');
+    const btnRunClass = document.getElementById('btn-run-class');
+    const classInsight = document.getElementById('class-insight');
+    const classInsightText = document.getElementById('class-insight-text');
+    const classResultsCard = document.getElementById('class-results-card');
+    const classAccuracy = document.getElementById('class-accuracy');
+    const classExecTbody = document.getElementById('class-exec-tbody');
+
+    const mregYSelect = document.getElementById('mreg-y-select');
+    const mregLrInput = document.getElementById('mreg-lr-input');
+    const mregEpInput = document.getElementById('mreg-ep-input');
+    const mregXContainer = document.getElementById('mreg-x-container');
+    const btnRunMreg = document.getElementById('btn-run-mreg');
+    const mregInsight = document.getElementById('mreg-insight');
+    const mregInsightText = document.getElementById('mreg-insight-text');
+    const mregResultsCard = document.getElementById('mreg-results-card');
+    const mregR2 = document.getElementById('mreg-r2');
+    const mregExecTbody = document.getElementById('mreg-exec-tbody');
 
     const rawDataThead = document.getElementById('raw-data-thead');
     const rawDataTbody = document.getElementById('raw-data-tbody');
@@ -460,6 +491,18 @@ document.addEventListener('DOMContentLoaded', () => {
         kmeansXSelect.innerHTML = numOptions || '<option value="">...</option>'; kmeansYSelect.innerHTML = numOptions || '<option value="">...</option>';
         outlierSelect.innerHTML = numOptions || '<option value="">...</option>';
         feCol1.innerHTML = numOptions || '<option value="">...</option>'; feCol2.innerHTML = numOptions || '<option value="">...</option>';
+        
+        classYSelect.innerHTML = catOptions || '<option value="">...</option>';
+        mregYSelect.innerHTML = numOptions || '<option value="">...</option>';
+        
+        let checkboxHtml = '';
+        headers.forEach(h => {
+            if (columnStats[h].type === 'Numeric') {
+                checkboxHtml += `<label class="feature-checkbox"><input type="checkbox" value="${h}"> ${h}</label>`;
+            }
+        });
+        classXContainer.innerHTML = checkboxHtml || '<span class="text-muted text-sm">No numeric features</span>';
+        mregXContainer.innerHTML = checkboxHtml || '<span class="text-muted text-sm">No numeric features</span>';
     }
 
     // --- Analytics Logics ---
@@ -732,6 +775,170 @@ document.addEventListener('DOMContentLoaded', () => {
     corrXSelect.addEventListener('change', window.updateCorrelation); corrYSelect.addEventListener('change', window.updateCorrelation);
     btnRunKmeans.addEventListener('click', window.runKMeans);
     btnRunOutlier.addEventListener('click', window.runOutlierDetection);
+
+    window.runClassification = function() {
+        const target = classYSelect.value;
+        const features = Array.from(classXContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+        const k = parseInt(classKInput.value);
+        if(!target || features.length === 0 || isNaN(k)) {
+            alert(currentLang === 'tr' ? 'Lütfen hedef değişken, en az bir özellik ve K sayısını seçin.' : 'Please select target, at least one feature, and K.');
+            return;
+        }
+
+        classInsight.classList.remove('hidden');
+        classInsightText.innerHTML = `<div style="display:flex; align-items:center; gap:8px;"><div class="spinner" style="width:16px; height:16px; border-width:2px;"></div> <span class="text-muted">${currentLang === 'tr' ? 'Model Eğitiliyor (KNN)...' : 'Training Model (KNN)...'}</span></div>`;
+        classResultsCard.classList.add('hidden');
+        lucide.createIcons();
+
+        setTimeout(() => {
+            let validData = parsedData.filter(row => row[target] !== undefined && row[target] !== null && row[target] !== '');
+            for(let f of features) {
+                validData = validData.filter(row => typeof row[f] === 'number');
+            }
+            if(validData.length < 10) { alert(currentLang==='tr' ? "Yetersiz geçerli veri." : "Not enough valid data."); return; }
+            
+            let fStats = {};
+            features.forEach(f => {
+                let min = Infinity, max = -Infinity;
+                validData.forEach(row => { if(row[f]<min) min=row[f]; if(row[f]>max) max=row[f]; });
+                fStats[f] = {min, max, range: max-min === 0 ? 1 : max-min};
+            });
+
+            if(validData.length > 5000) validData = validData.slice(0, 5000);
+            
+            const splitIdx = Math.floor(validData.length * 0.8);
+            const trainData = validData.slice(0, splitIdx);
+            const testData = validData.slice(splitIdx);
+
+            let correct = 0;
+            testData.forEach(testRow => {
+                let distances = [];
+                trainData.forEach(trainRow => {
+                    let distSq = 0;
+                    features.forEach(f => {
+                        let tVal = (testRow[f] - fStats[f].min) / fStats[f].range;
+                        let trVal = (trainRow[f] - fStats[f].min) / fStats[f].range;
+                        distSq += Math.pow(tVal - trVal, 2);
+                    });
+                    distances.push({ dist: distSq, cls: trainRow[target] });
+                });
+                distances.sort((a,b) => a.dist - b.dist);
+                let neighbors = distances.slice(0, k);
+                let counts = {};
+                neighbors.forEach(n => { counts[n.cls] = (counts[n.cls] || 0) + 1; });
+                let bestCls = null; let maxC = 0;
+                for(let cls in counts) { if(counts[cls] > maxC) { maxC = counts[cls]; bestCls = cls; } }
+                
+                if(String(bestCls) === String(testRow[target])) correct++;
+            });
+
+            const accuracy = (correct / testData.length) * 100;
+            classAccuracy.textContent = accuracy.toFixed(1) + '%';
+            
+            if(currentLang === 'tr') classInsightText.innerHTML = `🧠 <strong>KNN Sınıflandırma:</strong> Seçilen ${features.length} özellik kullanılarak ${trainData.length} kayıt ile eğitilen model, ${testData.length} görünmeyen test verisinde hedefleri <strong>%${accuracy.toFixed(1)}</strong> oranında doğru tahmin etti.`;
+            else classInsightText.innerHTML = `🧠 <strong>KNN Classification:</strong> Trained with ${trainData.length} records using ${features.length} features and tested on ${testData.length} unseen records. The model successfully predicted the correct category with <strong>${accuracy.toFixed(1)}%</strong> accuracy.`;
+            
+            let html = `<tr><td>${currentLang==='tr'?'Doğruluk (Accuracy)':'Accuracy'}</td><td class="font-semibold text-accent">${accuracy.toFixed(2)}%</td></tr>
+                        <tr><td>${currentLang==='tr'?'Eğitim Verisi':'Train Data'}</td><td>${trainData.length}</td></tr>
+                        <tr><td>${currentLang==='tr'?'Test Verisi':'Test Data'}</td><td>${testData.length}</td></tr>
+                        <tr><td>${currentLang==='tr'?'Toplam Başarılı':'Total Correct'}</td><td class="text-success">${correct} / ${testData.length}</td></tr>`;
+            
+            classExecTbody.innerHTML = html;
+            classResultsCard.classList.remove('hidden');
+            lucide.createIcons();
+        }, 50);
+    };
+
+    window.runMultipleRegression = function() {
+        const target = mregYSelect.value;
+        const features = Array.from(mregXContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+        const lr = parseFloat(mregLrInput.value);
+        const epochs = parseInt(mregEpInput.value);
+        
+        if(!target || features.length === 0 || isNaN(lr) || isNaN(epochs)) {
+            alert(currentLang === 'tr' ? 'Lütfen hedef değişken, özellikler ve parametreleri seçin.' : 'Please select target, features, and parameters.');
+            return;
+        }
+
+        mregInsight.classList.remove('hidden');
+        mregInsightText.innerHTML = `<div style="display:flex; align-items:center; gap:8px;"><div class="spinner" style="width:16px; height:16px; border-width:2px;"></div> <span class="text-muted">${currentLang === 'tr' ? 'Gradient Descent Çalışıyor...' : 'Running Gradient Descent...'}</span></div>`;
+        mregResultsCard.classList.add('hidden');
+        lucide.createIcons();
+
+        setTimeout(() => {
+            let validData = parsedData.filter(row => typeof row[target] === 'number');
+            for(let f of features) {
+                validData = validData.filter(row => typeof row[f] === 'number');
+            }
+            if(validData.length < 10) { alert(currentLang==='tr' ? "Yetersiz geçerli veri." : "Not enough valid data."); return; }
+            
+            let means = {}, stds = {};
+            let yMean = 0, yStd = 0;
+            validData.forEach(row => { yMean += row[target]; features.forEach(f => means[f] = (means[f] || 0) + row[f]); });
+            yMean /= validData.length; features.forEach(f => means[f] /= validData.length);
+            
+            validData.forEach(row => { yStd += Math.pow(row[target]-yMean, 2); features.forEach(f => stds[f] = (stds[f] || 0) + Math.pow(row[f]-means[f], 2)); });
+            yStd = Math.sqrt(yStd/validData.length) || 1;
+            features.forEach(f => stds[f] = Math.sqrt(stds[f]/validData.length) || 1);
+
+            let weights = new Array(features.length).fill(0);
+            let bias = 0;
+            const N = validData.length;
+
+            for(let e=0; e<epochs; e++) {
+                let dW = new Array(features.length).fill(0);
+                let dB = 0;
+                for(let i=0; i<N; i++) {
+                    let yTrue = (validData[i][target] - yMean) / yStd;
+                    let yPred = bias;
+                    for(let j=0; j<features.length; j++) {
+                        let xNorm = (validData[i][features[j]] - means[features[j]]) / stds[features[j]];
+                        yPred += weights[j] * xNorm;
+                    }
+                    let error = yPred - yTrue;
+                    dB += error;
+                    for(let j=0; j<features.length; j++) {
+                        let xNorm = (validData[i][features[j]] - means[features[j]]) / stds[features[j]];
+                        dW[j] += error * xNorm;
+                    }
+                }
+                bias -= lr * (1/N) * dB;
+                for(let j=0; j<features.length; j++) {
+                    weights[j] -= lr * (1/N) * dW[j];
+                }
+            }
+            
+            let ssRes = 0, ssTot = 0;
+            for(let i=0; i<N; i++) {
+                let yTrueNorm = (validData[i][target] - yMean) / yStd;
+                let yPredNorm = bias;
+                for(let j=0; j<features.length; j++) {
+                    yPredNorm += weights[j] * ((validData[i][features[j]] - means[features[j]]) / stds[features[j]]);
+                }
+                ssRes += Math.pow(yTrueNorm - yPredNorm, 2);
+                ssTot += Math.pow(yTrueNorm, 2);
+            }
+            const r2 = ssTot === 0 ? 0 : 1 - (ssRes / ssTot);
+            
+            mregR2.textContent = 'R² = ' + r2.toFixed(3);
+            
+            if(currentLang === 'tr') mregInsightText.innerHTML = `💡 <strong>Çoklu Regresyon:</strong> ${epochs} döngü Gradient Descent kullanılarak model eğitildi. Modelin veriyi açıklama başarısı (R²) <strong>${(r2*100).toFixed(1)}%</strong> olarak hesaplandı. Özellik ağırlıkları, her bir bağımsız değişkenin hedefe olan pozitif/negatif etkisini gösterir.`;
+            else mregInsightText.innerHTML = `💡 <strong>Multiple Regression:</strong> Trained using Gradient Descent over ${epochs} epochs. The model explains <strong>${(r2*100).toFixed(1)}%</strong> of the variance (R²). Feature weights indicate the positive/negative predictive power of each variable.`;
+            
+            let html = '';
+            let featureWeights = features.map((f, i) => ({ f: f, w: weights[i] })).sort((a,b) => Math.abs(b.w) - Math.abs(a.w));
+            featureWeights.forEach(fw => {
+                html += `<tr><td>${fw.f}</td><td class="font-semibold ${fw.w > 0 ? 'text-success' : 'text-danger'}">${fw.w > 0 ? '+' : ''}${fw.w.toFixed(4)}</td></tr>`;
+            });
+            
+            mregExecTbody.innerHTML = html;
+            mregResultsCard.classList.remove('hidden');
+            lucide.createIcons();
+        }, 50);
+    };
+
+    if(btnRunClass) btnRunClass.addEventListener('click', window.runClassification);
+    if(btnRunMreg) btnRunMreg.addEventListener('click', window.runMultipleRegression);
 
     function pearsonCorrelation(x, y) {
         let n = x.length; let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
